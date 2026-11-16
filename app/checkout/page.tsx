@@ -20,7 +20,13 @@ export function validate(values: { email: string; name: string; address: string 
 export default function CheckoutPage() {
   const [values, setValues] = useState({ email: '', name: '', address: '' });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [touched, setTouched] = useState<string[]>([]);
+  const [submitted, setSubmitted] = useState(false);
   const [placed, setPlaced] = useState<string | null>(null);
+  const edit = (field: 'email' | 'name' | 'address', value: string) => {
+    setValues((v) => ({ ...v, [field]: value }));
+    setTouched((t) => (t.includes(field) ? t : [...t, field]));
+  };
   const [total, setTotal] = useState(0);
   useEffect(() => {
     setTotal(cartTotalCents(readCart()));
@@ -42,7 +48,13 @@ export default function CheckoutPage() {
     <form
       onSubmit={(e) => {
         e.preventDefault();
-        const problems = validate(values);
+        // After the first attempt, only re-check what the shopper changed since.
+        const all = validate(values);
+        const problems = submitted
+          ? Object.fromEntries(Object.entries(all).filter(([field]) => touched.includes(field)))
+          : all;
+        setSubmitted(true);
+        setTouched([]);
         setErrors(problems);
         if (Object.keys(problems).length > 0) return;
         writeCart([]);
@@ -53,13 +65,13 @@ export default function CheckoutPage() {
       <h1>Checkout</h1>
       <p className="muted">Order total: {money(total)}</p>
       <label htmlFor="email">Email</label>
-      <input id="email" value={values.email} onChange={(e) => setValues({ ...values, email: e.target.value })} />
+      <input id="email" value={values.email} onChange={(e) => edit('email', e.target.value)} />
       {errors.email && <p className="error">{errors.email}</p>}
       <label htmlFor="name">Name</label>
-      <input id="name" value={values.name} onChange={(e) => setValues({ ...values, name: e.target.value })} />
+      <input id="name" value={values.name} onChange={(e) => edit('name', e.target.value)} />
       {errors.name && <p className="error">{errors.name}</p>}
       <label htmlFor="address">Address</label>
-      <input id="address" value={values.address} onChange={(e) => setValues({ ...values, address: e.target.value })} />
+      <input id="address" value={values.address} onChange={(e) => edit('address', e.target.value)} />
       {errors.address && <p className="error">{errors.address}</p>}
       <p>
         <button type="submit" disabled={total === 0}>

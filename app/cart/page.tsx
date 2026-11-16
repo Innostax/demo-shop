@@ -18,7 +18,7 @@ export default function CartPage() {
     return (
       <>
         <h1>Your cart is empty</h1>
-        <Link className="button" href="/">
+        <Link className="button" href="/products">
           Continue shopping
         </Link>
       </>
