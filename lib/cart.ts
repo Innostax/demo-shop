@@ -32,12 +32,9 @@ export function setQuantity(lines: CartLine[], productId: string, quantity: numb
   return lines.map((l) => (l.productId === productId ? { ...l, quantity } : l));
 }
 
-/** The order total: every line's price times its quantity. */
+/** The order total. */
 export function cartTotalCents(lines: CartLine[]): number {
-  return lines.reduce((sum, line) => {
-    const product = findProduct(line.productId);
-    return product ? sum + product.priceCents * line.quantity : sum;
-  }, 0);
+  return lines.reduce((sum, line) => sum + (findProduct(line.productId)?.priceCents ?? 0), 0);
 }
 
 export const cartCount = (lines: CartLine[]): number => lines.reduce((n, l) => n + l.quantity, 0);
